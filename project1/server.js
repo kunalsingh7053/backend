@@ -1,40 +1,42 @@
 const express = require("express");
+const connectToDB = require("./src/db/db.js");
+connectToDB();
 const app = express();
 
-let notes = [];
+
 app.use(express.json());//middleware
+
+const notes = [];
+
 app.get('/',(req,res)=>{
-    res.json({
-        message:"Hellow Cohort"
-    })
+    res.send('hellow cohort')
 })
 app.post('/notes',(req,res)=>{
     notes.push(req.body);
     res.json({
-        message:"Note Create Successfully"
+        message:"note added successfuly",
     })
 })
 app.get('/notes',(req,res)=>{
-   res.json(notes);
+    res.json(notes);
+
 })
-app.delete('/notes/:index',(req,res)=>{
-    const index = req.params.index;
-    delete notes[index];
+app.delete('/notes/:id',(req,res)=>{
+    const id = req.params.id;
+    delete notes[id];
     res.json({
-        message:"Note Deleted Successfully"
+        message:"note delete successfuly"
     })
 })
-app.patch('/notes/:index',(req,res)=>{
-    const index = req.params.index;
+app.patch('/notes/:id',(req,res)=>{
+    const id = req.params.id;
     const {title} = req.body;
     const {description} = req.body;
-    notes[index].title = title;
-    notes[index].description = description;
-    res.json({
-        message:"Note Update Successfully"
+    notes[id].title = title;
+    notes[id].description = description;
+      res.json({
+        message:"note update successfuly"
     })
-
-
 })
 
 
