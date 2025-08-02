@@ -1,13 +1,12 @@
 const mongoose = require("mongoose");
-
-
+require('dotenv').config();  
 
 
 
 
 function connectToDB()
 {
-mongoose.connect("mongodb+srv://kunalsingh7053:hGrdvOWLuXyaSAYX@cluster0.mo75uyr.mongodb.net/cohort")
+mongoose.connect(process.env.MONGODB_URI)
 
 .then(()=>{
     console.log("connected to DB");

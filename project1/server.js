@@ -1,41 +1,53 @@
 const express = require("express");
 const connectToDB = require("./src/db/db.js");
-connectToDB();
+const noteModel = require("./src/models/note.model.js")
+
 const app = express();
+connectToDB();
 
 
 app.use(express.json());//middleware
 
-const notes = [];
 
-app.get('/',(req,res)=>{
-    res.send('hellow cohort')
-})
-app.post('/notes',(req,res)=>{
-    notes.push(req.body);
+
+app.post('/notes',async (req,res)=>{
+    const {title,description} = req.body
+    await noteModel.create({
+        title,description
+    })
     res.json({
         message:"note added successfuly",
     })
 })
-app.get('/notes',(req,res)=>{
-    res.json(notes);
-
-})
-app.delete('/notes/:id',(req,res)=>{
-    const id = req.params.id;
-    delete notes[id];
+app.get('/notes',async (req,res)=>{
+    const notes = await noteModel.find();
     res.json({
-        message:"note delete successfuly"
+        message:"Notes fetch successfully",
+        notes
     })
 })
-app.patch('/notes/:id',(req,res)=>{
-    const id = req.params.id;
+app.delete("/notes/:id",async (req,res)=>{
+    const noteid = req.params.id;
+    await noteModel.findOneAndDelete({
+        _id : noteid
+    })
+    res.json({
+        message:"note deleted successfully"
+    })
+})
+app.patch("/notes/:id",async (req,res)=>{
+    const noteid = req.params.id;
     const {title} = req.body;
     const {description} = req.body;
-    notes[id].title = title;
-    notes[id].description = description;
-      res.json({
-        message:"note update successfuly"
+      
+   await noteModel.findOneAndUpdate({
+    _id:noteid
+   },{
+    title:title,
+    description:description
+   })
+    res.json({
+        message:"note update successfully"
     })
 })
 
