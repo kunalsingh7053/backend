@@ -1,57 +1,54 @@
 const express = require("express");
-const connectToDB = require("./src/db/db.js");
-const noteModel = require("./src/models/note.model.js")
-
 const app = express();
+const connectToDB = require("./src/db/db");
+const noteModel = require("./src/models/note.model");
 connectToDB();
 
-
-app.use(express.json());//middleware
-
-
-
+app.use(express.json()); //middlewear
 app.post('/notes',async (req,res)=>{
-    const {title,description} = req.body
-    await noteModel.create({
-        title,description
+    const {title} = req.body;
+    const {description} = req.body;
+
+   await noteModel.create({
+        title:title,
+        descripton:description
     })
     res.json({
-        message:"note added successfuly",
+        message:"note created successfuly"
     })
 })
 app.get('/notes',async (req,res)=>{
+ 
     const notes = await noteModel.find();
-    res.json({
-        message:"Notes fetch successfully",
-        notes
-    })
+    res.json(notes);
+
 })
-app.delete("/notes/:id",async (req,res)=>{
-    const noteid = req.params.id;
+app.delete('/notes/:id',async(req,res)=>{
+    const id = req.params.id;
     await noteModel.findOneAndDelete({
-        _id : noteid
+        _id:id
     })
     res.json({
-        message:"note deleted successfully"
+        message:"note deleted successfuly"
     })
 })
-app.patch("/notes/:id",async (req,res)=>{
-    const noteid = req.params.id;
-    const {title} = req.body;
-    const {description} = req.body;
-      
-   await noteModel.findOneAndUpdate({
-    _id:noteid
-   },{
+app.patch('/notes/:id',async (req,res)=>{
+    const id = req.params.id;
+    const {title}  = req.body;
+    const {description}  = req.body;
+await noteModel.findOneAndUpdate({
+    _id:id
+},{
     title:title,
-    description:description
-   })
-    res.json({
-        message:"note update successfully"
-    })
+    descripton:description
+})
+res.json({
+    message:"note update successfuly"
+})
+
 })
 
 
 app.listen(3000,()=>{
-    console.log("Server is running on port 3000");
+    console.log("server is running on port 3000")
 })
