@@ -1,19 +1,32 @@
-const { GoogleGenAI }  = require("@google/genai");
+const { GoogleGenAI } = require("@google/genai");
+const { model } = require("mongoose");
 
-const ai = new GoogleGenAI
-apiKey: process.env.GEMINI_API_KEY,
+const ai = new GoogleGenAI({});
 
-async function main() {
+
+
+async function generateCaption(base64ImageFile){
+
+  const contents = [
+    {
+      inlineData: {
+        mimeType: "image/jpeg",
+        data: base64ImageFile,
+      },
+    },
+    { text: "Caption this image." },
+  ];
+  
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
-    contents: "Explain how AI works in a few words",
-    config: {
-      thinkingConfig: {
-        thinkingBudget: 0, // Disables thinking
-      },
+    contents: contents,
+    config:{
+      systemInstruction:
+      `you are an expert in  generating caption for images.
+       you generate single caption for the image. you caption should be short and concise.
+       you use hashtage and emojis in the caption.`
     }
   });
-  console.log(response.text);
+return response.text
 }
-
-await main();
+module.exports =  generateCaption;
