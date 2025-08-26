@@ -15,4 +15,4 @@ const response = await imagekit.upload({
 })
 return response;
 }
-module.exports = uploadFile;
+module.exports = uploadFile; 
