@@ -7,7 +7,7 @@ const messageSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"user"
     },
-    chat:{
+    chat:{  
      type:mongoose.Schema.Types.ObjectId,
      ref:"chat"   
     },
@@ -15,7 +15,7 @@ const messageSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    role:{
+    role:{ 
         type:String,
         enum:[ "user", "model"],
         default:"user"

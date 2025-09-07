@@ -8,8 +8,8 @@ const app = express();
 app.use(express.json())
 app.use(cookieparser())
 
-//using routes
+//using routes 
 app.use('/api/auth',authRoutes)
 app.use('/api/chat',chatRoutes)
 
-module.exports = app;
+module.exports = app;   

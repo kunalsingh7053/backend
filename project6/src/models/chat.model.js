@@ -12,8 +12,8 @@ title:{
 },
 lastActivity:{
     type:Date,
-    default:Date.now
-}
+    default:Date.now 
+} 
 
 },{
     timestamps: true
