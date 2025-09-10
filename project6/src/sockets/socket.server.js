@@ -7,6 +7,7 @@ const messageModel = require("../models/message.model")
 const {createMemory,queryMemory} = require("../services/vector.service");
 const { chat } = require("@pinecone-database/pinecone/dist/assistant/data/chat");
 
+
 function initSocketServer(httpServer)
 {   
     const io = new Server(httpServer,{});
@@ -33,7 +34,7 @@ try {
                 chat:messagePayload.chat,
                 user:socket.user._id,
                 content:messagePayload.content,
-                role:"user"
+                role:"user" 
             }) 
             const vectors = await aiService.generateVector(messagePayload.content);
       await createMemory({
@@ -50,6 +51,7 @@ try {
     queryVector:vectors,
     limit:3,
     metadata:{
+            user: socket.user._id  // 👈 filter by user
 
     }
  })
@@ -60,16 +62,32 @@ try {
                 chat:messagePayload.chat
             }).sort({createdAt:-1}).limit(20).lean()).reverse();
            
-            console.log(chatHistory)
-        
-            const response = await aiService.generateResponse(chatHistory.map(item=>{
+          const stm = chatHistory.map(item=>{
                 return {
                     role:item.role,
                     parts:[{  
                         text:item.content
                     }]
                 }
-        }));
+        })        
+
+        const ltm = [
+            {
+                role:"user",
+                parts:[{
+                    text:`
+                   these are some previous messages from the chat history that are relevant to the current conversation:
+                ${memory.map(item=>item.metadata.text).join("\n")}
+                    `
+                }]
+            }
+        ]
+        console.log("chat history=>");
+        console.log(ltm);
+        console.log(stm);
+        
+        
+            const response = await aiService.generateResponse([...ltm,...stm]);
          const  responseMessage =    await messageModel.create({
                 chat:messagePayload.chat,
                 user:socket.user._id,

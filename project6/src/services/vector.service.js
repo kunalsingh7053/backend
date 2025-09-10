@@ -9,10 +9,11 @@ const cohortChatGptIndex = pc.Index('cohort-chat-gpt');
 
 async function createMemory({vector,metadata,messageId}){
     await cohortChatGptIndex.upsert([{
-         id: messageId,
+         id: messageId, 
     values: vector,   // ✅ Correct key
     metadata
     }])
+    console.log("fsalsjfad=>",metadata)
 }
 async function queryMemory({ queryVector, limit = 5, metadata }) {
   const data = await cohortChatGptIndex.query({

@@ -19,7 +19,7 @@ async function generateVector(content)
         contents: content,
         config:{
             outputDimensionality:768
-        }
+        } 
     });
     return response.embeddings[0].values;
 }
