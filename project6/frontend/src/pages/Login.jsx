@@ -33,15 +33,15 @@ const Login = () => {
   };
 
   return (
-  <div className="min-h-screen flex items-center justify-center bg-white text-black">
+    <div className="flex items-center justify-center w-full min-h-[80vh] bg-white from-blue-50 via-white to-indigo-50">
       <form
-  className="w-full max-w-sm bg-gray-50 rounded-lg shadow-md p-6 space-y-6"
+        className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-8 border border-gray-100"
         onSubmit={handleSubmit}
       >
-  <h2 className="text-2xl font-bold text-center text-black mb-4">Login</h2>
-        <div className="space-y-4">
+        <h2 className="text-3xl font-extrabold text-center text-blue-700 mb-6 tracking-tight">Sign In</h2>
+        <div className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-black">Email</label>
+            <label htmlFor="email" className="block text-base font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
               name="email"
@@ -49,11 +49,11 @@ const Login = () => {
               value={form.email}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-black">Password</label>
+            <label htmlFor="password" className="block text-base font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
               name="password"
@@ -61,19 +61,19 @@ const Login = () => {
               value={form.password}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg"
             />
           </div>
         </div>
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-indigo-500 text-white font-semibold rounded-md shadow hover:bg-indigo-600 transition-colors"
+          className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all text-lg mt-4"
         >
           Login
         </button>
-        <div className="text-center mt-4">
-          <span className="text-sm">Don't have an account? </span>
-          <a href="/register" className="text-indigo-600 hover:underline font-semibold">Create one</a>
+        <div className="text-center mt-6">
+          <span className="text-base">Don't have an account? </span>
+          <a href="/register" className="text-blue-600 hover:underline font-semibold">Create one</a>
         </div>
       </form>
     </div>
