@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import ChatHeader from '../components/ChatHeader';
 import ChatMessages from '../components/ChatMessages';
 import ChatInput from '../components/ChatInput';
+import { toast } from 'react-toastify';
 
 
 const Home = () => {
@@ -32,7 +33,6 @@ const Home = () => {
     e.preventDefault();
     if (!input.trim()) return;
     const newMessage = { sender: 'user', text: input };
-    // Add user message
     setChatSessions((prev) =>
       prev.map((chat) =>
         chat.id === activeChatId
@@ -73,12 +73,25 @@ const Home = () => {
     setChatSessions([...chatSessions, newChat]);
     setActiveChatId(newId);
     setShowModal(false);
+        toast.success('Creating a new chat session!')
+
   };
 
   // Switch chat session
   const handleSelectChat = (id) => {
     setActiveChatId(id);
     setSidebarOpen(false);
+  };
+
+  // Delete chat handler
+  const handleDeleteChat = (id) => {
+    setChatSessions((prev) => prev.filter((chat) => chat.id !== id));
+    // If deleted chat is active, switch to first available chat
+    if (activeChatId === id) {
+      const remaining = chatSessions.filter((chat) => chat.id !== id);
+      setActiveChatId(remaining.length > 0 ? remaining[0].id : null);
+    }
+    toast.info('Chat session deleted.');
   };
 
   // Responsive sidebar toggle
@@ -92,6 +105,7 @@ const Home = () => {
         activeChatId={activeChatId}
         handleSelectChat={handleSelectChat}
         handleCreateChat={handleCreateChat}
+        handleDeleteChat={handleDeleteChat}
         sidebarOpen={sidebarOpen}
         toggleSidebar={toggleSidebar}
       />
@@ -121,7 +135,7 @@ const Home = () => {
               <input
                 type="text"
                 className="w-full px-4 py-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder={`Chat ${chatSessions.length + 1}`}
+                placeholder={`Chat`}
                 value={chatNameInput}
                 onChange={e => setChatNameInput(e.target.value)}
                 autoFocus
