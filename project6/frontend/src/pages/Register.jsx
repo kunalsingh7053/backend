@@ -1,46 +1,46 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Register = () => {
-  const [form, setForm] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
-    password: ''
-  });
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-  axios.post("http://localhost:3000/api/auth/register",{
-    email: form.email,
-    fullName:{
-
-      firstName: form.firstName,
-      lastName: form.lastName,
-    },
-    password: form.password
-  },{
-    withCredentials: true
-  }).then((res)=>{
+  const onSubmit = (data) => {
+    axios.post("http://localhost:3000/api/auth/register", {
+      email: data.email,
+      fullName: { 
+        firstName: data.firstName,
+        lastName: data.lastName,
+      },
+      password: data.password
+    }, {
+      withCredentials: true
+    }).then((res) => {
       console.log(res);
-        navigate("/");
-  }).catch((err)=>{
+      navigate("/");
+      toast.success("Registration successful!"); // <--- show success toast
+    }).catch((err) => {
       console.log(err);
-  })
-};
+        // If user already exists
+      if (err.response && err.response.status === 400) {
+        toast.error(err.response.data.message); // Show notification
+        navigate("/login"); // Redirect to login
+      } else {
+        toast.error("Something went wrong!");
+      }
+      console.log(err);
+    });
+  }; 
 
   return (
     <div className="flex items-center justify-center w-full min-h-[80vh] bg-white from-indigo-50 via-white to-blue-50">
       <form
         className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-8 border border-gray-100"
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
       >
         <h2 className="text-3xl font-extrabold text-center text-indigo-700 mb-6 tracking-tight">Create Account</h2>
         <div className="space-y-6">
@@ -48,51 +48,43 @@ const Register = () => {
             <label htmlFor="email" className="block text-base font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
-              name="email"
               id="email"
-              value={form.email}
-              onChange={handleChange}
-              required
+              {...register("email", { required: "Email is required" })}
               className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-lg"
             />
+            {errors.email && <span className="text-red-500 text-sm">{errors.email.message}</span>}
           </div>
           <div className="flex gap-4">
             <div className="w-1/2">
               <label htmlFor="firstName" className="block text-base font-medium text-gray-700 mb-1">First Name</label>
               <input
                 type="text"
-                name="firstName"
                 id="firstName"
-                value={form.firstName}
-                onChange={handleChange}
-                required
+                {...register("firstName", { required: "First name is required" })}
                 className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-lg"
               />
+              {errors.firstName && <span className="text-red-500 text-sm">{errors.firstName.message}</span>}
             </div>
             <div className="w-1/2">
               <label htmlFor="lastName" className="block text-base font-medium text-gray-700 mb-1">Last Name</label>
               <input
                 type="text"
-                name="lastName"
                 id="lastName"
-                value={form.lastName}
-                onChange={handleChange}
-                required
+                {...register("lastName", { required: "Last name is required" })}
                 className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-lg"
               />
+              {errors.lastName && <span className="text-red-500 text-sm">{errors.lastName.message}</span>}
             </div>
           </div>
           <div>
             <label htmlFor="password" className="block text-base font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
-              name="password"
               id="password"
-              value={form.password}
-              onChange={handleChange}
-              required
+              {...register("password", { required: "Password is required" })}
               className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 text-lg"
             />
+            {errors.password && <span className="text-red-500 text-sm">{errors.password.message}</span>}
           </div>
         </div>
         <button
@@ -107,7 +99,7 @@ const Register = () => {
         </div>
       </form>
     </div>
-  );
+  ); 
 };
 
 export default Register;

@@ -9,12 +9,12 @@ async function registerUser(req,res){
 
     if(isUserAlereadyExists)
     {
-        return res.status(400).json({message:"=>user already exists"});
+        return res.status(400).json({message:"👦User already registered! Please login."});
 
     }
     const user = await userModel.create({
-        fullName:{
-            firstName,lastName
+        fullName:{ 
+            firstName,lastName 
         },
         email,
         password:await bcrypt.hash(password,10)
@@ -28,8 +28,8 @@ async function registerUser(req,res){
             _id:user._id,
 fullName: `${user.fullName.firstName} ${user.fullName.lastName}`
 
-
-        }
+  
+        } 
     })
 }
 async function loginUser(req,res){
@@ -38,15 +38,15 @@ async function loginUser(req,res){
 
      if(!user)
      {
-        return res.status(400).json({message:"Invalid email or password"})
+        return res.status(400).json({message:"Invalid Email "})
      }
      const isPasswordValid = await bcrypt.compare(password,user.password);
 
      if(!isPasswordValid){
-        return res.status(400).json({message:"Invalid email or password"})
+        return res.status(400).json({message:"Invalid  Password"})
      }
      const token = jwt.sign({id:user._id},process.env.JWT_SECRET)
-     res.cookie("token",token)
+     res.cookie("token",token) 
      res.status(200).json({
         message:"Login successful",
          user:{
@@ -58,8 +58,76 @@ fullName: `${user.fullName.firstName} ${user.fullName.lastName}`
         
      })
 }
+async function logoutUser(req,res){
+    res.clearCookie("token");
+    res.status(200).json({message:"Logout successful"});
+
+
+}
+async function profileUser(req,res){
+      res.json(req.user);
+
+}
+async function removeProfileUser(req,res){
+ try {
+        // req.user comes from auth middleware (logged-in user)
+  
+         const detectUser = await userModel.findByIdAndDelete(req.user._id)
+
+         if(!detectUser){
+
+         return res.status(404).json({message:"User not found"});
+         }
+         // Clear token cookie
+    res.clearCookie("token");
+
+    res.status(200).json({ message: "User deleted successfully" });
+
+ } catch (error) {
+        console.error(err);
+    res.status(500).json({ message: "Server error" });
+
+ }
+
+}
+async function updateProfileUser(req, res) {
+  try {
+    const userId = req.user._id; // comes from auth middleware
+    const { firstName, lastName, password } = req.body;
+
+    // Build update object
+    const updateData = {};
+    if (firstName) updateData['fullName.firstName'] = firstName;
+    if (lastName) updateData['fullName.lastName'] = lastName;
+    if (password) updateData.password = await bcrypt.hash(password, 10);
+
+    // Update user
+    const updatedUser = await userModel.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Profile updated successfully!",
+      user: {
+        _id: updatedUser._id,
+        email: updatedUser.email,
+        fullName: `${updatedUser.fullName.firstName} ${updatedUser.fullName.lastName}`
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
  module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser,
+    profileUser,
+    removeProfileUser,
+    updateProfileUser
 };
 

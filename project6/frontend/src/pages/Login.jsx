@@ -1,42 +1,37 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Login = () => {
-  const [form, setForm] = useState({
-    email: '',
-    password: ''
-  });
+
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const { register, handleSubmit, formState: { errors } } = useForm();
 
-  const handleSubmit = (e) => {
-    console.log(form)
-    e.preventDefault();
-    // Handle login logic here
-    axios.post("http://localhost:3000/api/auth/login",{
-      email: form.email,
-      password: form.password
-    },
-  {
-    withCredentials: true
-  }).then((res)=>{
+  const onSubmit = (data) => {
+    console.log(data);
+    axios.post("http://localhost:3000/api/auth/login", {
+      email: data.email,
+      password: data.password
+    }, { 
+      withCredentials: true
+    }).then((res) => {
       console.log(res);
       navigate("/");
-  }).catch((err)=>{
+    }).catch((err) => {
       console.log(err);
-  })
+     toast.error(err.response?.data?.message || "An error occurred"); // <--- show toast notification
+    });
   };
 
   return (
     <div className="flex items-center justify-center w-full min-h-[80vh] bg-white from-blue-50 via-white to-indigo-50">
       <form
         className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-8 border border-gray-100"
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
       >
         <h2 className="text-3xl font-extrabold text-center text-blue-700 mb-6 tracking-tight">Sign In</h2>
         <div className="space-y-6">
@@ -46,11 +41,13 @@ const Login = () => {
               type="email"
               name="email"
               id="email"
-              value={form.email}
-              onChange={handleChange}
-              required
+              {...register("email", { required: "Email is required" })}
               className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg"
             />
+            {errors.email && (
+              <span className="text-red-500 text-sm">{errors.email.message}</span>
+            )}
+
           </div>
           <div>
             <label htmlFor="password" className="block text-base font-medium text-gray-700 mb-1">Password</label>
@@ -58,11 +55,12 @@ const Login = () => {
               type="password"
               name="password"
               id="password"
-              value={form.password}
-              onChange={handleChange}
-              required
+              {...register("password", { required: "Password is required" })}
               className="mt-1 block w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg"
             />
+            {errors.password && (
+              <span className="text-red-500 text-sm">{errors.password.message}</span>
+            )}
           </div>
         </div>
         <button

@@ -98,7 +98,7 @@ const Home = () => {
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen flex flex-col md:flex-row" style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
       {/* Sidebar (desktop only) */}
       <Sidebar
         chatSessions={chatSessions}
@@ -116,9 +116,7 @@ const Home = () => {
         onClick={toggleSidebar}
         aria-label="Open sidebar"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+       <img src="/public/images/menu-line.png" alt="" />
       </button>
 
       {/* Overlay for sidebar on mobile */}
@@ -128,8 +126,8 @@ const Home = () => {
 
       {/* Modal for chat name input */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-xs transform animate-fadeScaleIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-30" style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+          <div className=" rounded-xl shadow-2xl p-6 w-full max-w-xs transform animate-fadeScaleIn" style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
             <form onSubmit={handleModalSubmit}>
               <h3 className="text-lg font-bold mb-4 text-center">Enter Chat Name</h3>
               <input

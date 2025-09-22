@@ -16,4 +16,16 @@
 .animate-fadeScaleIn {
 	animation: fadeScaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+:root {
+  --color-bg: #ffffff;
+  --color-text: #000000;
+}
+
+.dark {
+  --color-bg: #000000;
+  --color-text: #ffffff;
+}
+
+
+
 
