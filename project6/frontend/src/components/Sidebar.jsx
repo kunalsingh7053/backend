@@ -17,7 +17,7 @@ const Sidebar = ({ chatSessions, activeChatId, handleSelectChat, handleCreateCha
         <span className="font-bold text-lg">Chats</span>
         <button className="md:hidden" onClick={toggleSidebar}>
           <span className="text-xl">×</span>
-        </button>
+        </button> 
       </div>
       <div className="p-4 border-b">
         <button

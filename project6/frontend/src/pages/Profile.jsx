@@ -38,9 +38,15 @@ const Profile = () => {
   const isUpdateProfile = location.pathname.includes('/profile/update');
 
   return (
-    <div className={`flex min-h-[80vh] from-blue-50 px-2 ${isUpdateProfile ? 'flex-row items-center justify-center gap-6' : 'flex-col items-center justify-center'}`}>
-      {/* Profile Card */}
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col items-center relative">
+    <div
+      className={`flex min-h-[80vh] from-blue-50 px-2
+        ${isUpdateProfile
+          ? 'flex-col items-center justify-center gap-6 sm:flex-row sm:items-center sm:justify-center'
+          : 'flex-col items-center justify-center'}
+      `}
+    >
+  {/* Profile Card */}
+  <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col items-center relative mx-auto">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -93,7 +99,7 @@ const Profile = () => {
       </div>
       {/* Outlet for UpdateProfile */}
       {isUpdateProfile && (
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md mx-auto mt-6 sm:mt-0">
           <Outlet />
         </div>
       )}

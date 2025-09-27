@@ -92,14 +92,28 @@ async function removeProfileUser(req,res){
 }
 async function updateProfileUser(req, res) {
   try {
-    const userId = req.user._id; // comes from auth middleware
-    const { firstName, lastName, password } = req.body;
+    const userId = req.user._id; // from auth middleware
+    const user = await userModel.findOne({ _id: userId });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { firstName, lastName, oldpassword, newpassword } = req.body;
+
+    // Verify old password if new password is provided
+    if (newpassword) {
+      const isValid = await bcrypt.compare(oldpassword, user.password);
+      if (!isValid) {
+        return res.status(400).json({ message: "Invalid Old Password" });
+      }
+    }
 
     // Build update object
     const updateData = {};
     if (firstName) updateData['fullName.firstName'] = firstName;
     if (lastName) updateData['fullName.lastName'] = lastName;
-    if (password) updateData.password = await bcrypt.hash(password, 10);
+    if (newpassword) updateData.password = await bcrypt.hash(newpassword, 10);
 
     // Update user
     const updatedUser = await userModel.findByIdAndUpdate(
@@ -113,15 +127,15 @@ async function updateProfileUser(req, res) {
       user: {
         _id: updatedUser._id,
         email: updatedUser.email,
-        fullName: `${updatedUser.fullName.firstName} ${updatedUser.fullName.lastName}`
-      }
+        fullName: `${updatedUser.fullName.firstName} ${updatedUser.fullName.lastName}`,
+      },
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 }
+
  module.exports = {
     registerUser,
     loginUser,
