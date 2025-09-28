@@ -1,105 +1,141 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import ChatHeader from '../components/ChatHeader';
 import ChatMessages from '../components/ChatMessages';
 import ChatInput from '../components/ChatInput';
 import { toast } from 'react-toastify';
+import axios from 'axios';
+import { io } from 'socket.io-client';
 
+// Initialize Socket.IO client
+const socket = io("http://localhost:3000", { withCredentials: true });
 
 const Home = () => {
-  // State variables
-  const [chatSessions, setChatSessions] = useState([
-    {
-      id: 1,
-      title: 'Chat 1',
-      messages: [
-        { sender: 'ai', text: 'Hello! How can I help you today?' }
-      ]
-    }
-  ]);
-  const [activeChatId, setActiveChatId] = useState(1);
+  const [chatSessions, setChatSessions] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(null);
   const [input, setInput] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [chatNameInput, setChatNameInput] = useState('');
+  const [loadingMessages, setLoadingMessages] = useState(false); // Loading state
 
-  // Get active chat messages
-  const activeChat = chatSessions.find((c) => c.id === activeChatId);
+  // Fetch messages for a chat
+  const fetchMessages = async (chatId) => {
+    setLoadingMessages(true);
+    try {
+      const res = await axios.get(`http://localhost:3000/api/chat/messages/${chatId}`, { withCredentials: true });
+      const messages = res.data.messages.map(msg => ({
+        sender: msg.role === 'user' ? 'user' : 'ai',
+        text: msg.content
+      }));
+      setLoadingMessages(false);
+      return messages;
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
+      setLoadingMessages(false);
+      return [];
+    }
+  };
+
+  // Fetch chats and messages on mount
+  useEffect(() => {
+    const loadChats = async () => {
+      try {
+        const res = await axios.get('http://localhost:3000/api/chat', { withCredentials: true });
+        const chats = await Promise.all(res.data.chats.map(async (chat) => {
+          const messages = await fetchMessages(chat._id);
+          return {
+            id: chat._id,
+            title: chat.title,
+            messages: messages
+          };
+        }));
+        setChatSessions(chats);
+        if (chats.length > 0) setActiveChatId(chats[0].id);
+      } catch (err) {
+        console.log('Failed to fetch chats', err);
+      }
+    };
+    loadChats();
+  }, []);
+
+  // Listen for AI responses via Socket.IO
+  useEffect(() => {
+    const handler = ({ content, chat }) => {
+      setChatSessions(prev =>
+        prev.map(c =>
+          c.id === chat
+            ? { ...c, messages: [...c.messages, { sender: 'ai', text: content }] }
+            : c
+        )
+      );
+    };
+    socket.on('ai-response', handler);
+    return () => socket.off('ai-response', handler);
+  }, []);
+
+  const activeChat = chatSessions.find(c => c.id === activeChatId);
   const messages = activeChat ? activeChat.messages : [];
 
-  // Send message handler
+  // Send message
   const handleSend = (e) => {
     e.preventDefault();
     if (!input.trim()) return;
     const newMessage = { sender: 'user', text: input };
-    setChatSessions((prev) =>
-      prev.map((chat) =>
-        chat.id === activeChatId
-          ? { ...chat, messages: [...chat.messages, newMessage] }
-          : chat
+    setChatSessions(prev =>
+      prev.map(c =>
+        c.id === activeChatId
+          ? { ...c, messages: [...c.messages, newMessage] }
+          : c
       )
     );
+    socket.emit('ai-message', { chat: activeChatId, content: input });
     setInput('');
-    // Simulate AI response
-    setTimeout(() => {
-      setChatSessions((prev) =>
-        prev.map((chat) =>
-          chat.id === activeChatId
-            ? { ...chat, messages: [...chat.messages, { sender: 'ai', text: 'AI response to: ' + newMessage.text }] }
-            : chat
-        )
-      );
-    }, 600);
   };
 
-  // Show modal for chat name
+  // Create new chat
   const handleCreateChat = () => {
     setChatNameInput('');
     setShowModal(true);
   };
 
-  // Handle modal submit
-  const handleModalSubmit = (e) => {
+  const handleModalSubmit = async (e) => {
     e.preventDefault();
-    let chatName = chatNameInput.trim();
-    if (!chatName) chatName = `Chat ${chatSessions.length + 1}`;
-    const newId = chatSessions.length + 1;
+    let chatName = chatNameInput.trim() || `Chat ${chatSessions.length + 1}`;
+    const res = await axios.post('http://localhost:3000/api/chat', { title: chatName }, { withCredentials: true });
     const newChat = {
-      id: newId,
-      title: chatName,
+      id: res.data.chat._id,
+      title: res.data.chat.title,
       messages: [{ sender: 'ai', text: 'New chat started. How can I help?' }]
     };
     setChatSessions([...chatSessions, newChat]);
-    setActiveChatId(newId);
+    setActiveChatId(res.data.chat._id);
     setShowModal(false);
-        toast.success('Creating a new chat session!')
-
+    toast.success('Chat created!');
   };
 
-  // Switch chat session
-  const handleSelectChat = (id) => {
-    setActiveChatId(id);
-    setSidebarOpen(false);
-  };
-
-  // Delete chat handler
-  const handleDeleteChat = (id) => {
-    setChatSessions((prev) => prev.filter((chat) => chat.id !== id));
-    // If deleted chat is active, switch to first available chat
+  // Delete chat
+  const handleDeleteChat = async (id) => {
+    await axios.delete(`http://localhost:3000/api/chat/${id}`, { withCredentials: true });
+    setChatSessions(prev => prev.filter(chat => chat.id !== id));
     if (activeChatId === id) {
-      const remaining = chatSessions.filter((chat) => chat.id !== id);
+      const remaining = chatSessions.filter(chat => chat.id !== id);
       setActiveChatId(remaining.length > 0 ? remaining[0].id : null);
     }
-    toast.info('Chat session deleted.');
+    toast.info('Chat deleted.');
   };
 
-  // Responsive sidebar toggle
-  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  const handleSelectChat = async (id) => {
+    setActiveChatId(id);
+    setSidebarOpen(false);
+    const messages = await fetchMessages(id);
+    setChatSessions(prev => prev.map(c => c.id === id ? { ...c, messages } : c));
+  };
+
+  const toggleSidebar = () => setSidebarOpen(prev => !prev);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row" style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
-      {/* Sidebar (desktop only) */}
       <Sidebar
         chatSessions={chatSessions}
         activeChatId={activeChatId}
@@ -110,30 +146,26 @@ const Home = () => {
         toggleSidebar={toggleSidebar}
       />
 
-      {/* Sidebar toggle button (mobile) */}
+      {/* Mobile sidebar toggle */}
       <button
         className="md:hidden fixed top-4 left-4 z-30 bg-white shadow p-2 rounded-full"
         onClick={toggleSidebar}
-        aria-label="Open sidebar"
       >
-       <img src="/public/images/menu-line.png" alt="" />
+        <img src="/public/images/menu-line.png" alt="menu" />
       </button>
 
-      {/* Overlay for sidebar on mobile */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 z-10 md:hidden" onClick={toggleSidebar}></div>
-      )}
+      {sidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-30 z-10 md:hidden" onClick={toggleSidebar}></div>}
 
-      {/* Modal for chat name input */}
+      {/* Modal for chat name */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-30" style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
-          <div className=" rounded-xl shadow-2xl p-6 w-full max-w-xs transform animate-fadeScaleIn" style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-30" style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+          <div className="rounded-xl shadow-2xl p-6 w-full max-w-xs">
             <form onSubmit={handleModalSubmit}>
               <h3 className="text-lg font-bold mb-4 text-center">Enter Chat Name</h3>
               <input
                 type="text"
                 className="w-full px-4 py-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder={`Chat`}
+                placeholder="Chat"
                 value={chatNameInput}
                 onChange={e => setChatNameInput(e.target.value)}
                 autoFocus
@@ -150,7 +182,11 @@ const Home = () => {
       {/* Main chat area */}
       <main className="flex-1 flex flex-col justify-between md:ml-64 pt-16 md:pt-0">
         <ChatHeader title={activeChat ? activeChat.title : 'Chat'} />
-        <ChatMessages messages={messages} />
+        {loadingMessages ? (
+          <div className="flex justify-center items-center h-full text-gray-500">Loading messages...</div>
+        ) : (
+          <ChatMessages messages={messages} />
+        )}
         <ChatInput input={input} setInput={setInput} handleSend={handleSend} />
       </main>
     </div>
@@ -158,4 +194,3 @@ const Home = () => {
 };
 
 export default Home;
- 

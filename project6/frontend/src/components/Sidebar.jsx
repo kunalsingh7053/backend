@@ -35,10 +35,21 @@ const Sidebar = ({ chatSessions, activeChatId, handleSelectChat, handleCreateCha
               key={chat.id}
               className={`relative w-full p-2 rounded flex items-center hover:bg-gray-100 ${activeChatId === chat.id ? 'bg-blue-100 font-bold' : ''}`}
             >
-              <div className="flex-1 cursor-pointer pr-10" onClick={() => handleSelectChat(chat.id)}>
-                <div className="font-semibold truncate">{chat.title}</div>
-                <div className="text-xs text-gray-500 truncate max-w-full">{lastMsg}</div>
-              </div>
+          <div
+  className="flex-1 cursor-pointer pr-4 overflow-hidden"
+  onClick={() => handleSelectChat(chat.id)}
+>
+  <div className="font-semibold truncate" title={chat.title}>
+    {chat.title || "Untitled Chat"}
+  </div>
+  <div
+    className="text-xs text-gray-500 truncate"
+    title={lastMsg || "No messages yet"}
+  >
+    {lastMsg}
+  </div>
+</div>
+
               <button
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700 px-2 py-1 rounded"
                 title="Delete chat"

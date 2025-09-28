@@ -8,4 +8,7 @@ router.post('/',authMiddleware.authUser,chatController.createChat)
 
 //get
 router.get('/',authMiddleware.authUser,chatController.getChats)
+
+router.delete('/:id',authMiddleware.authUser,chatController.deleteChat)
+router.get('/messages/:id',authMiddleware.authUser,chatController.getMessagesByChatId)
 module.exports = router  

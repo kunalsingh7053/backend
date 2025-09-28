@@ -22,15 +22,14 @@ async function registerUser(req,res){
    const token = jwt.sign({id:user._id},process.env.JWT_SECRET)
     res.cookie("token",token)
     res.status(201).json({
-        message:"User registered successfully",
-        user:{
-            email:user.email,
-            _id:user._id,
-fullName: `${user.fullName.firstName} ${user.fullName.lastName}`
+  message: "User registered successfully",
+  user: {
+    _id: user._id,
+    email: user.email,
+    fullName: user.fullName // send as object, not string
+  }
+});
 
-  
-        } 
-    })
 }
 async function loginUser(req,res){
     const {email,password} = req.body;
@@ -47,16 +46,15 @@ async function loginUser(req,res){
      }
      const token = jwt.sign({id:user._id},process.env.JWT_SECRET)
      res.cookie("token",token) 
-     res.status(200).json({
-        message:"Login successful",
-         user:{
-            email:user.email,
-            _id:user._id,
-fullName: `${user.fullName.firstName} ${user.fullName.lastName}`
+ res.status(200).json({
+  message: "Login successful",
+  user: {
+    _id: user._id,
+    email: user.email,
+    fullName: user.fullName // send as object
+  }
+});
 
-        }
-        
-     })
 }
 async function logoutUser(req,res){
     res.clearCookie("token");

@@ -4,27 +4,27 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 const Login = () => {
 
   const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
+  const { login,error } = useContext(AuthContext);  
 
-  const onSubmit = (data) => {
+  const onSubmit = async(data) => {
     console.log(data);
-    axios.post("http://localhost:3000/api/auth/login", {
-      email: data.email,
-      password: data.password
-    }, { 
-      withCredentials: true
-    }).then((res) => {
-      console.log(res);
+
+      try {
+         await login(data.email,data.password);
+ toast.success("Login successful!");
       navigate("/");
-    }).catch((err) => {
-      console.log(err);
-     toast.error(err.response?.data?.message || "An error occurred"); // <--- show toast notification
-    });
+      } catch (err) {
+              toast.error(err.response?.data?.message || "Login failed");
+
+      }
+ 
   };
 
   return (
@@ -63,6 +63,7 @@ const Login = () => {
             )}
           </div>
         </div>
+        {error && <div className="text-red-500 text-center">{error}</div>}
         <button
           type="submit"
           className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all text-lg mt-4"

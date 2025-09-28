@@ -2,40 +2,31 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Outlet, useLocation } from 'react-router-dom';
-
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+ const { user, loading,deleteAccount,logout } = useContext(AuthContext);
 
-  // Fetch logged-in user from backend
-  useEffect(() => {
-    axios.get('http://localhost:3000/api/auth/profile', { withCredentials: true })
-      .then(res => setUser(res.data))
-      .catch(err => {
-        console.log(err);
-        navigate('/login'); // redirect if not authenticated
-      })
-      .finally(() => setLoading(false));
-  }, [navigate]);
-
+ 
+console.log("this is user=>>>>>>",user)
   if (loading) return <div className="text-center mt-20">Loading...</div>;
   if (!user) return <div className="text-center mt-20 text-red-500">User not found</div>;
 
   // Delete user function
-  const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete your account?")) {
-      axios.delete("http://localhost:3000/api/auth/profile", { withCredentials: true })
-        .then(() => {
-          alert("User deleted successfully!");
-          navigate("/register"); // redirect after deletion
-        })
-        .catch(err => console.log(err));
-    }
+  const handleDelete = async() => {
+    deleteAccount();
+      navigate("/register"); // Navigation happens in component, not context
+
   };
 
   const location = useLocation();
   const isUpdateProfile = location.pathname.includes('/profile/update');
+// Logout function inside Profile component
+const handleLogout = async () => {
+  await logout();        // clears user data
+  navigate("/login");    // redirect to login page
+};
 
   return (
     <div
@@ -66,10 +57,12 @@ const Profile = () => {
         />
 
         {/* User Info */}
-        <h2 className="text-2xl sm:text-3xl font-bold mb-1 text-blue-700 dark:text-blue-300 text-center">
-          {`${user.fullName.firstName} ${user.fullName.lastName}`}
-        </h2>
-        <p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 mb-4 text-center">{user.email}</p>
+     <h2 className="text-2xl sm:text-3xl font-bold mb-1 text-blue-700 dark:text-blue-300 text-center">
+  {`${user.fullName?.firstName || ""} ${user.fullName?.lastName || ""}`}
+</h2>
+<p className="text-base sm:text-lg text-gray-700 dark:text-gray-300 mb-4 text-center">
+  {user.email || ""}
+</p>
 
         {/* Edit Button */}
         <button onClick={()=>navigate('/profile/update')} className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg mb-3">
@@ -80,21 +73,18 @@ const Profile = () => {
         <div className='flex justify-between gap-4'>
           <button
             className="px-6 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-200 transition-all shadow-lg"
-            onClick={() => {
-              axios.post("http://localhost:3000/api/auth/logout", {}, { withCredentials: true })
-                .then(() => navigate('/login'))
-                .catch(err => console.log(err));
-            }}
+           onClick={handleLogout}
           >
             Logout
           </button>
           {/* Delete Account Button */}
-          <button
-            className="px-6 py-2 bg-red-700 text-white rounded-xl font-semibold hover:bg-red-800 transition-all shadow-lg"
-            onClick={handleDelete}
-          >
-            Delete Account
-          </button>
+         <button
+  className="px-6 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-200 transition-all shadow-lg"
+  onClick={ handleDelete}
+>
+  Delete Account
+</button>
+
         </div>
       </div>
       {/* Outlet for UpdateProfile */}

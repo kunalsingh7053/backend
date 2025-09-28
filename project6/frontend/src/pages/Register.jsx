@@ -4,37 +4,23 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 const Register = () => {
+  const { registerUser} = useContext(AuthContext);
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
+ 
+ const onSubmit = async (data) => {
+  const result = await registerUser(data); // call context
 
-  const onSubmit = (data) => {
-    axios.post("http://localhost:3000/api/auth/register", {
-      email: data.email,
-      fullName: { 
-        firstName: data.firstName,
-        lastName: data.lastName,
-      },
-      password: data.password
-    }, {
-      withCredentials: true
-    }).then((res) => {
-      console.log(res);
-      navigate("/");
-      toast.success("Registration successful!"); // <--- show success toast
-    }).catch((err) => {
-      console.log(err);
-        // If user already exists
-      if (err.response && err.response.status === 400) {
-        toast.error(err.response.data.message); // Show notification
-        navigate("/login"); // Redirect to login
-      } else {
-        toast.error("Something went wrong!");
-      }
-      console.log(err);
-    });
-  }; 
+  if (result.success) {
+    navigate("/"); // successful registration
+  } else if (result.message && result.message.includes("User already exists")) {
+    toast.error("User already exists! Redirecting to login...");
+    navigate("/login"); // navigate here
+  }
+};
 
   return (
     <div className="flex items-center justify-center w-full min-h-[80vh] bg-white from-indigo-50 via-white to-blue-50">

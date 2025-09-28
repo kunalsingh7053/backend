@@ -1,66 +1,56 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useForm } from "react-hook-form";
+import { AuthContext } from "../context/AuthContext";
 
 const UpdateProfile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, updateProfile } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   // Initialize react-hook-form
   const { register, handleSubmit, reset } = useForm();
 
-  // Fetch logged-in user
+  // Pre-fill form with user data when available
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/auth/profile", { withCredentials: true })
-      .then((res) => {
-        setUser(res.data);
-        // Pre-fill form with fetched user data
-        reset({
-          firstName: res.data.fullName.firstName,
-          lastName: res.data.fullName.lastName,
-          oldpassword: "",
-          newpassword: "",
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        navigate("/login");
-      })
-      .finally(() => setLoading(false));
-  }, [navigate, reset]);
+    if (!user) {
+      navigate("/login"); // redirect if not logged in
+      return;
+    }
+
+    reset({
+      firstName: user.fullName?.firstName || "",
+      lastName: user.fullName?.lastName || "",
+      oldpassword: "",
+      newpassword: "",
+    });
+
+    setLoading(false);
+  }, [user, navigate, reset]);
 
   // Form submit
- const onSubmit = async (data) => {
-  // Check if any field changed compared to current user data
-  const isChanged =
-    data.firstName !== user.fullName.firstName ||
-    data.lastName !== user.fullName.lastName ||
-    (data.newpassword && data.newpassword.length > 0);
+  const onSubmit = async (data) => {
+    // Check if anything changed
+    const isChanged =
+      data.firstName !== user.fullName.firstName ||
+      data.lastName !== user.fullName.lastName ||
+      (data.newpassword && data.newpassword.length > 0);
 
-  if (!isChanged) {
-    setMessage("You did not change anything!");
-    return; // Stop submission
-  }
+    if (!isChanged) {
+      setMessage("You did not change anything!");
+      return;
+    }
 
-  try {
-    const res = await axios.patch(
-      "http://localhost:3000/api/auth/profile/update",
-      data,
-      { withCredentials: true }
-    );
-    setMessage(res.data.message);
-    setUser(res.data.user);
-    reset({ ...data, oldpassword: "", newpassword: "" });
-  } catch (error) {
-    setMessage(error.response?.data?.message || "Update failed!");
-    console.log(error);
-  }
-};
-
+    // Call context updateProfile
+    const res = await updateProfile(data);
+    if (res.success) {
+      setMessage("Profile updated successfully!");
+      reset({ ...data, oldpassword: "", newpassword: "" });
+    } else {
+      setMessage(res.message || "Update failed!");
+    }
+  };
 
   if (loading) return <div className="text-center mt-20">Loading...</div>;
 
