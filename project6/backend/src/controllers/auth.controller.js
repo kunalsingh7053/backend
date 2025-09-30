@@ -1,6 +1,9 @@
 const userModel = require('../models/user.model')
 const bcrypt  = require("bcryptjs");
 const jwt = require('jsonwebtoken');
+const { deleteUserFromPinecone } = require('../services/vector.service');
+const Chat = require('../models/chat.model');
+const Message = require('../models/message.model');
 
 async function registerUser(req,res){
     const {fullName:{firstName,lastName},email,password} = req.body;
@@ -66,28 +69,36 @@ async function profileUser(req,res){
       res.json(req.user);
 
 }
-async function removeProfileUser(req,res){
- try {
-        // req.user comes from auth middleware (logged-in user)
-  
-         const detectUser = await userModel.findByIdAndDelete(req.user._id)
 
-         if(!detectUser){
 
-         return res.status(404).json({message:"User not found"});
-         }
-         // Clear token cookie
+async function removeProfileUser(req, res) {
+  try {
+    const userId = req.user._id;
+
+    // Delete user-related data in MongoDB
+    await Chat.deleteMany({ user: userId });
+    await Message.deleteMany({ user: userId });
+
+    // Delete user from MongoDB
+    const detectUser = await userModel.findByIdAndDelete(userId);
+
+    if (!detectUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete user’s embeddings from Pinecone
+    await deleteUserFromPinecone(userId);
+
+    // Clear token cookie
     res.clearCookie("token");
 
-    res.status(200).json({ message: "User deleted successfully" });
-
- } catch (error) {
-        console.error(err);
+    res.status(200).json({ message: "User and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
     res.status(500).json({ message: "Server error" });
-
- }
-
+  }
 }
+
 async function updateProfileUser(req, res) {
   try {
     const userId = req.user._id; // from auth middleware

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const { chat } = require("@pinecone-database/pinecone/dist/assistant/data/chat");
 const chatModel = require("../models/chat.model");
 const messageModel = require("../models/message.model");
+const { deleteUserFromPinecone } = require("../services/vector.service");
 
 
 async function createChat(req, res) {
@@ -46,8 +47,8 @@ async function getChats(req,res)
 }
 
 async function deleteChat(req, res) {
-  const user = req.user;
-  const { id } = req.params;
+  const user = req.user; 
+  const { id } = req.params; 
 
   // 1️⃣ Delete the chat
   const chat = await chatModel.findOneAndDelete({ _id: id, user: user._id });
@@ -57,6 +58,9 @@ async function deleteChat(req, res) {
 
   // 2️⃣ Delete all messages related to this chat
   await messageModel.deleteMany({ chat: id });
+
+    // Delete user’s embeddings from Pinecone
+    await deleteUserFromPinecone(id);
 
   res.status(200).json({
     message: "Chat and its messages deleted successfully"

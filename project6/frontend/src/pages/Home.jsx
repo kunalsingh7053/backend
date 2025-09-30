@@ -80,7 +80,12 @@ const Home = () => {
   // Send message
   const handleSend = (e) => {
     e.preventDefault();
+    if (!activeChatId) {
+      toast.error("Please create a chat first!");
+      return;
+    }
     if (!input.trim()) return;
+
     const newMessage = { sender: 'user', text: input };
     setChatSessions(prev =>
       prev.map(c =>
@@ -121,7 +126,7 @@ const Home = () => {
     if (activeChatId === id) {
       const remaining = chatSessions.filter(chat => chat.id !== id);
       setActiveChatId(remaining.length > 0 ? remaining[0].id : null);
-    }
+    } 
     toast.info('Chat deleted.');
   };
 
@@ -181,13 +186,27 @@ const Home = () => {
 
       {/* Main chat area */}
       <main className="flex-1 flex flex-col justify-between md:ml-64 pt-16 md:pt-0">
-        <ChatHeader title={activeChat ? activeChat.title : 'Chat'} />
-        {loadingMessages ? (
-          <div className="flex justify-center items-center h-full text-gray-500">Loading messages...</div>
+        {activeChat ? (
+          <>
+            <ChatHeader title={activeChat.title} />
+            {loadingMessages ? (
+              <div className="flex justify-center items-center h-full text-gray-500">Loading messages...</div>
+            ) : (
+              <ChatMessages messages={messages} />
+            )}
+            <ChatInput input={input} setInput={setInput} handleSend={handleSend} />
+          </>
         ) : (
-          <ChatMessages messages={messages} />
+          <div className="flex flex-col justify-center items-center h-full text-gray-500">
+            <p>No active chat. Please create a new chat to start messaging.</p>
+            <button
+              onClick={handleCreateChat}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              Create Chat
+            </button>
+          </div>
         )}
-        <ChatInput input={input} setInput={setInput} handleSend={handleSend} />
       </main>
     </div>
   );

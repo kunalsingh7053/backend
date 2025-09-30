@@ -25,8 +25,16 @@ async function queryMemory({ queryVector, limit = 5, metadata }) {
   return data.matches;
 }
 
-
+async function deleteUserFromPinecone(userId) {
+  try {
+    await cohortChatGptIndex.deleteAll({ namespace: userId.toString() });
+    console.log(`✅ Deleted Pinecone data for user: ${userId}`);
+  } catch (err) {
+    console.error("❌ Error deleting Pinecone data:", err);
+  }
+}
 module.exports = {
     createMemory,
-    queryMemory
+    queryMemory,
+    deleteUserFromPinecone
 }
