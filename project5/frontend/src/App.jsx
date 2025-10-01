@@ -12,7 +12,7 @@ const App = () => {
     {
       sender: "ai",
       name: "Nexa",
-      text: "Hello 👋, I am Nexa - your AI assistant. How can I help you today?",
+      text: "Hello 👋, I am Nexa - your AI assistant. How can I help you today.?",
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
     }
   ]);
