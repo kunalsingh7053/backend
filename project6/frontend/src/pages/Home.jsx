@@ -4,7 +4,8 @@ import ChatHeader from '../components/ChatHeader';
 import ChatMessages from '../components/ChatMessages';
 import ChatInput from '../components/ChatInput';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import axios from "../api/axios";
+
 import { io } from 'socket.io-client';
 
 // Initialize Socket.IO client
@@ -23,7 +24,7 @@ const Home = () => {
   const fetchMessages = async (chatId) => {
     setLoadingMessages(true);
     try {
-      const res = await axios.get(`http://localhost:3000/api/chat/messages/${chatId}`, { withCredentials: true });
+      const res = await axios.get(`/api/chat/messages/${chatId}`, { withCredentials: true });
       const messages = res.data.messages.map(msg => ({
         sender: msg.role === 'user' ? 'user' : 'ai',
         text: msg.content
@@ -41,7 +42,7 @@ const Home = () => {
   useEffect(() => {
     const loadChats = async () => {
       try {
-        const res = await axios.get('http://localhost:3000/api/chat', { withCredentials: true });
+        const res = await axios.get('/api/chat', { withCredentials: true });
         const chats = await Promise.all(res.data.chats.map(async (chat) => {
           const messages = await fetchMessages(chat._id);
           return {
@@ -107,7 +108,7 @@ const Home = () => {
   const handleModalSubmit = async (e) => {
     e.preventDefault();
     let chatName = chatNameInput.trim() || `Chat ${chatSessions.length + 1}`;
-    const res = await axios.post('http://localhost:3000/api/chat', { title: chatName }, { withCredentials: true });
+    const res = await axios.post('/api/chat', { title: chatName }, { withCredentials: true });
     const newChat = {
       id: res.data.chat._id,
       title: res.data.chat.title,
@@ -121,12 +122,12 @@ const Home = () => {
 
   // Delete chat
   const handleDeleteChat = async (id) => {
-    await axios.delete(`http://localhost:3000/api/chat/${id}`, { withCredentials: true });
+    await axios.delete(`/api/chat/${id}`, { withCredentials: true });
     setChatSessions(prev => prev.filter(chat => chat.id !== id));
     if (activeChatId === id) {
       const remaining = chatSessions.filter(chat => chat.id !== id);
       setActiveChatId(remaining.length > 0 ? remaining[0].id : null);
-    } 
+    }  
     toast.info('Chat deleted.');
   };
 
