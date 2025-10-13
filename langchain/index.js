@@ -11,7 +11,7 @@ const model  = new ChatGoogleGenerativeAI({
 
 const promptTemplate = PromptTemplate.fromTemplate(
     `
-    explain {topic} in a single sentence suitable for a 10 year old.
+    explain {topic} in a single sentence suitable for a 11 year old.
     `
 )
 
