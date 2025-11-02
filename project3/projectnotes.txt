@@ -1,0 +1,4 @@
+Post/register = user create/register krna.(status code :- 201).
+Post/login = check username & password then loggedin the user.
+Get/user = get user data [protected].
+Get/logout = log out of account [protected].
