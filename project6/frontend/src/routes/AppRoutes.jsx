@@ -14,7 +14,7 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
   
-        <Routes>
+        <Routes> 
           {/* ✅ Public Routes */}
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />

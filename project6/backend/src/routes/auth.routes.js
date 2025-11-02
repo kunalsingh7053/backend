@@ -11,5 +11,5 @@ router.get("/profile",authMiddleware.authUser,authControllers.profileUser)
 router.delete("/profile",authMiddleware.authUser,authControllers.removeProfileUser)
 router.patch("/profile/update",authMiddleware.authUser,authControllers.updateProfileUser
 )
-
-module.exports = router   
+ 
+module.exports = router    

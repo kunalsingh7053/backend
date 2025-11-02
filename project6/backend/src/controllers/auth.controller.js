@@ -97,7 +97,7 @@ async function removeProfileUser(req, res) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Server error" });
   }
-}
+} 
 
 async function updateProfileUser(req, res) {
   try {
