@@ -25,7 +25,7 @@ async function generateContent(prompt){
 
 
 client.once("ready",()=>{
-    console.log("Bot is ready!!!");
+    console.log("Bot is ready*!");
 })
 
 client.on("messageCreate",async(message)=>{
