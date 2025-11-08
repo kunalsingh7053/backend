@@ -15,16 +15,24 @@ const client = new Client({
 // --- AI Setup ---
 const ai = new GoogleGenAI({});
 async function generateContent(prompt) {
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-  });
-  return response.text;
+  try {
+    // Add instruction to always reply in ~50 words
+    const finalPrompt = `Answer the following question in about 200 words:\n\n${prompt}`;
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: finalPrompt,
+    });
+    console.log("AI response:", response.text);
+    return response.text || "Sorry, I couldn't generate a response.";
+  } catch (err) {
+    console.error("AI generation error:", err);
+    return "Something went wrong while generating a response.";
+  }
 }
 
 // --- Discord Events ---
-client.on("clientReady", () => {
-  console.log("✅ Bot is ready!");
+client.once("ready", () => {
+  console.log(`✅ Bot is ready! Logged in as ${client.user.tag}`);
 });
 
 client.on("messageCreate", async (message) => {
@@ -37,10 +45,11 @@ client.on("messageCreate", async (message) => {
     }
     console.log(`📩 Message received: ${message.content}`);
   } catch (error) {
-    console.error("Error generating response:", error);
+    console.error("Error sending message:", error);
   }
 });
 
+// --- Login ---
 client.login(process.env.DISCORD_BOT_TOKEN);
 
 // --- Express server to keep Render alive ---
