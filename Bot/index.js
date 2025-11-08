@@ -45,7 +45,7 @@ client.on("messageCreate", async (message) => {
     }
     console.log(`📩 Message received: ${message.content}`);
   } catch (error) {
-    console.error("Error sending message:", error);
+    console.error("Errors sending message:", error);
   }
 });
 
