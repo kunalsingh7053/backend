@@ -136,7 +136,7 @@ const App = () => {
                       <p className="text-slate-700">Subtotal:</p>
                       <p className="font-bold text-slate-800">₹{(total )}</p>
                     </div>
-                     <PaymentButton  />
+                     <PaymentButton total={total}   />
                   </div>
                 </>
               )}

@@ -1,11 +1,19 @@
 import React from "react";
 import axios from "axios";
 
-function PaymentButton() {
+function PaymentButton({ total }) {
   const handlePayment = async () => {
     try {
       // Step 1: Create order on backend
-      const { data: order } = await axios.post("http://localhost:3000/api/payments/create-order")
+      const { data: order } = await axios.post("http://localhost:3000/api/payments/create-order",{
+        cart:{
+          price:{
+
+            amount:total,   // Example amount
+            currency: "INR"
+          }
+        }
+      })
       // Step 2: Razorpay options
       const options = {
         key: "rzp_test_RgPnRKyyn4atEl", // from .env (frontend can use only key_id)
@@ -33,7 +41,7 @@ function PaymentButton() {
           contact: "9999999999"
         },
         theme: {
-          color: "#ea0c13ff"
+          color: "#840cf4ff"
         }
       };
 

@@ -6,14 +6,14 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-async function createOrder(req, res) {
+async function createOrder(req, res) { 
   try {
-    
-    const product = await productModel.findOne();
+     
+       const { cart } = req.body;
 
     const options = {
-      amount: product.price.amount * 100,   // rupees → paise
-      currency: product.price.currency
+      amount: cart.price.amount * 100,   // rupees → paise
+      currency: cart.price.currency
     };
 
     const order = await razorpay.orders.create(options);
